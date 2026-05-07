@@ -1,4 +1,4 @@
-from flask import Flask,render_template
+from flask import Flask
 from flask_restful import Api
 from api_routes import summarize,chat,photo_gen,code_and_reasonining,Signin,Refill,Tokens,Register
 from flask_cors import CORS

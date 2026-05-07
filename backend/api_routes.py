@@ -231,7 +231,9 @@ class photo_gen(Resource):
             "Accept": "application/json",
         }
         payload = {
-            "prompt": user_prompt,
+            "prompt": [{"role":"user","content": f"A whimsical and highly detailed {user_prompt}, rendered in a vibrant digital art style. Featuring\
+                   dramatic cinematic lighting, surreal pops of color, and an energetic composition. Elements of high-fantasy aesthetics\
+                   mixed with a playful, modern twist. 8k resolution, intricate textures, masterpiece quality, trending on ArtStation."}],
             "width": 1024,
             "height": 1024,
             "seed": 0,
@@ -296,7 +298,11 @@ class code_and_reasonining(Resource):
         
         completion = client.chat.completions.create(
         model="minimaxai/minimax-m2.7",
-        messages=[{"role":"user","content":code}],
+        messages=[{
+  "role": "user",
+  "content": f"Task: {[code]}\n\(\nConstraints:\\)n- Start output immediately with the first functional character.\n- No markdown code blocks (no ```).\n- No preamble, greetings, or conversational filler.\n- No trailing whitespace or empty lines.\n- Provide raw text only."
+}
+],
         temperature=1,
         top_p=0.95,
         max_tokens=8192,
