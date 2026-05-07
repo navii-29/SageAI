@@ -1,18 +1,23 @@
 flask
 bcrypt
 gunicorn
-OPENAI
+openai
 pymongo
 flask_restful
-
-
-
+bs4
+# re
+# os
+IPython
+# time
 flask-cors
 requests
 python-dotenv
 openai
-
+scipy
 ipython
 diffusers
 torch
 bcrypt
+playwright
+bs4
+dotenv
