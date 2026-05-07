@@ -3,7 +3,7 @@ bcrypt
 gunicorn
 OPENAI
 pymongo
-
+flask_restful
 
 
 
