@@ -3,5 +3,16 @@ bcrypt
 gunicorn
 OPENAI
 pymongo
-flask-restful
 
+
+
+
+flask-cors
+requests
+python-dotenv
+openai
+
+ipython
+diffusers
+torch
+bcrypt
