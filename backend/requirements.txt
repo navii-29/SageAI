@@ -1,5 +1,7 @@
 flask
 bcrypt
+gunicorn
+OPENAI
 pymongo
 flask-restful
 
