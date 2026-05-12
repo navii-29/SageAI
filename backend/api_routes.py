@@ -44,10 +44,10 @@ db = client.MultiModal
 users = db['Users']
 
 # nvidia key setup
-invoke_url = "https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-3-medium"
+# invoke_url = "https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-3-medium"
 load_dotenv(override=True)
 key_nvidia = os.getenv('Nvidia')
-conversation_history = []
+conversation_history2 = []
 
 #Register route
 class Register(Resource):
@@ -87,7 +87,7 @@ class audio_text(Resource):
 class chat(Resource):
     # global or session-based
     def post(self):
-        global conversation_history
+        global conversation_history2
         groq = OpenAI(base_url=groq_base_url, api_key=key)
 
         posted_data = request.get_json()
@@ -99,11 +99,11 @@ class chat(Resource):
 
 
 
-        conversation_history.append({"role": "user", "content": user_prompt})
+        conversation_history2.append({"role": "user", "content": user_prompt})
 
         messages = [
             {"role": "system", "content": system_prompt}
-        ] + conversation_history
+        ] + conversation_history2
 
         token_left = count_tokens(Username,users)
 
@@ -132,11 +132,11 @@ class chat(Resource):
                 yield content   # 🔥 send chunk to frontend
 
             # save memory AFTER streaming ends
-            conversation_history.append({
+            conversation_history2.append({
                 "role": "assistant",
                 "content": full_response
             })
-            # print(conversation_history)
+            # print(conversation_history2)
         
         try:
             users.update_one(
@@ -231,9 +231,9 @@ class photo_gen(Resource):
             "Accept": "application/json",
         }
         payload = {
-            "prompt": [{"role":"user","content": f"A whimsical and highly detailed {user_prompt}, rendered in a vibrant digital art style. Featuring\
+            "prompt": f"A whimsical and highly detailed {user_prompt}, rendered in a vibrant digital art style. Featuring\
                    dramatic cinematic lighting, surreal pops of color, and an energetic composition. Elements of high-fantasy aesthetics\
-                   mixed with a playful, modern twist. 8k resolution, intricate textures, masterpiece quality, trending on ArtStation."}],
+                   mixed with a playful, modern twist. 8k resolution, intricate textures, masterpiece quality, trending on ArtStation.",
             "width": 1024,
             "height": 1024,
             "seed": 0,
@@ -241,7 +241,7 @@ class photo_gen(Resource):
         }
 
         token_left = count_tokens(Username,users)
-        # print("the value of token left is ",token_left)
+        print("the value of token left is ",token_left)
 
         print(token_left)
         if token_left <= 0:
@@ -281,51 +281,158 @@ conversation_history2 = []
 class code_and_reasonining(Resource):
     def post(self):
 
-        posted_data = request.get_json()
-        code = posted_data['prompt']
-        Username = posted_data['Username']
 
-        client = OpenAI(
-        base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = key_nvidia
+        # global conversation_history2
+        # groq = OpenAI(base_url=groq_base_url, api_key=key)
+
+        # posted_data = request.get_json()
+        # _,system_prompt = data()
+        # user_prompt = posted_data["prompt"]
+        # # Password = ["Password"]
+        # Username = posted_data["Username"]
+
+
+
+
+        # conversation_history2.append({"role": "user", "content": user_prompt})
+
+        # messages = [{"role": "system", "content": system_prompt}] + conversation_history2
+
+        # token_left = count_tokens(Username,users)
+
+
+        # # print("the value of token left is ",token_left)
+
+        # if token_left <= 0:
+        #     users.update_one({"Username": Username}, {"$set": {"Token": 0}})
+        #     return jsonify({"status_code":303, "content": "Not enough tokens! Please refill"})
+
+        # # ✅ Atomic decrement — only decrements if Token is still > 0
+        
+        # def generate():
+        #     stream = groq.chat.completions.create(
+        #         model="openai/gpt-oss-120b",
+        #         messages=messages,
+        #         stream=True
+        #     )
+
+        #     full_response = ""
+
+        #     for chunk in stream:
+        #         content = chunk.choices[0].delta.content or ""
+        #         full_response += content
+        #         time.sleep(0.05)
+        #         yield content   # 🔥 send chunk to frontend
+
+        #     # save memory AFTER streaming ends
+        #     conversation_history2.append({
+        #         "role": "assistant",
+        #         "content": full_response
+        #     })
+        #     # print(conversation_history2)
+        
+        # try:
+        #     users.update_one(
+        #     {"Username": Username, "Token": {"$gt": 0}},
+        #       {"$inc": {"Token": -1}}
+        # )
+        #     return Response(generate(), mimetype='text/plain')
+        
+        # except Exception as e:
+        #     # ✅ Refund the token if summarization fails
+        #     users.update_one({"Username": Username}, {"$inc": {"Token": 1}})
+        #     return jsonify({"role": "BOT",
+        #     "content": "Application is facing some downtime please come back later!"})
+        groq = OpenAI(
+            base_url=groq_base_url,
+            api_key=key
         )
 
-        token_left = count_tokens(Username,users)
+        posted_data = request.get_json()
+
+        _, system_prompt = data()
+
+        user_prompt = posted_data["prompt"]
+        Username = posted_data["Username"]
+
+        token_left = count_tokens(Username, users)
 
         if token_left <= 0:
-            users.update_one({"Username": Username}, {"$set": {"Token": 0}})
-            return jsonify({"status_code":303,"content":"Not enough tokens! Please refill"})
-        
-        completion = client.chat.completions.create(
-        model="minimaxai/minimax-m2.7",
-        messages=[{
-  "role": "user",
-  "content": f"Task: {[code]}\n\(\nConstraints:\\)n- Start output immediately with the first functional character.\n- No markdown code blocks (no ```).\n- No preamble, greetings, or conversational filler.\n- No trailing whitespace or empty lines.\n- Provide raw text only."
-}
-],
-        temperature=1,
-        top_p=0.95,
-        max_tokens=8192,
-        stream=True,)
-        
-        full_response = []
+            users.update_one(
+                {"Username": Username},
+                {"$set": {"Token": 0}}
+            )
 
-        for chunk in completion:
-            if not getattr(chunk, "choices", None):
-                continue
-            if chunk.choices[0].delta.content is not None:
-                content = chunk.choices[0].delta.content
-                full_response.append(content)
-                # print(chunk.choices[0].delta.content, end="")
+            return jsonify({
+                "status_code": 303,
+                "content": "Not enough tokens! Please refill"
+            })
+
+        conversation_history2.append({
+            "role": "user",
+            "content": user_prompt
+        })
+
+        messages = [
+            {
+                "role": "system",
+                "content": system_prompt
+            }
+        ] + conversation_history2
+
         try:
-            users.update_one({"Username":Username,"Token": {"$gt":0}},{"$inc": {"Token": -1}})
-            return jsonify({"reply":full_response})
+
+            stream = groq.chat.completions.create(
+
+                model="openai/gpt-oss-120b",
+                messages=messages,
+                stream=True
+            )
+
+            full_response = []
+
+            for chunk in stream:
+
+                if not getattr(chunk, "choices", None):
+                    continue
+
+                content = chunk.choices[0].delta.content
+
+                if content is not None:
+                    full_response.append(content)
+
+            final_response = "".join(full_response)
+
+            conversation_history2.append({
+                "role": "assistant",
+                "content": final_response
+            })
+
+            users.update_one(
+                {
+                    "Username": Username,
+                    "Token": {"$gt": 0}
+                },
+                {
+                    "$inc": {"Token": -1}
+                }
+            )
+
+            return jsonify({
+                "content": final_response
+            })
 
         except Exception as e:
-            # ✅ Refund the token if summarization fails
-            users.update_one({"Username": Username}, {"$inc": {"Token": 1}})
-            # print("Summary error:", e)
-            return jsonify({"reply":"Not Responding please come back later!"})
+
+            users.update_one(
+                {"Username": Username},
+                {"$inc": {"Token": 1}}
+            )
+
+            return jsonify({
+                "role": "BOT",
+                "content": "Application is facing some downtime please come back later!"
+            })
                       
 
 
@@ -412,3 +519,61 @@ class Tokens(Resource):
 
         return jsonify({"status_code":200, "content":count_tokens(username,users)})
 
+
+
+
+
+
+
+
+
+
+
+
+
+#  code and reasoning old        
+# posted_data = request.get_json()
+#         code = posted_data['prompt']
+#         Username = posted_data['Username']
+
+#         client = OpenAI(
+#         base_url = "https://integrate.api.nvidia.com/v1",
+#         api_key = key_nvidia
+#         )
+
+#         token_left = count_tokens(Username,users)
+
+#         if token_left <= 0:
+#             users.update_one({"Username": Username}, {"$set": {"Token": 0}})
+#             return jsonify({"status_code":303,"content":"Not enough tokens! Please refill"})
+        
+#         completion = client.chat.completions.create(
+#         model="minimaxai/minimax-m2.7",
+#         messages=[{
+#   "role": "user",
+#   "content": f"Task: {[code]}\n\(\nConstraints:\\)n- Start output immediately with the first functional character.\n- No markdown code blocks (no ```).\n- No preamble, greetings, or conversational filler.\n- No trailing whitespace or empty lines.\n- Provide raw text only."
+# }
+# ],
+#         temperature=1,
+#         top_p=0.95,
+#         max_tokens=8192,
+#         stream=True,)
+        
+#         full_response = []
+
+#         for chunk in completion:
+#             if not getattr(chunk, "choices", None):
+#                 continue
+#             if chunk.choices[0].delta.content is not None:
+#                 content = chunk.choices[0].delta.content
+#                 full_response.append(content)
+#                 # print(chunk.choices[0].delta.content, end="")
+#         try:
+#             users.update_one({"Username":Username,"Token": {"$gt":0}},{"$inc": {"Token": -1}})
+#             return jsonify({"reply":full_response})
+
+#         except Exception as e:
+#             # ✅ Refund the token if summarization fails
+#             users.update_one({"Username": Username}, {"$inc": {"Token": 1}})
+#             # print("Summary error:", e)
+#             return jsonify({"reply":"Not Responding please come back later!"})

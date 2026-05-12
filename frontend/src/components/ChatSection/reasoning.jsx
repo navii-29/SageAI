@@ -54,16 +54,23 @@ const markdownComponents = {
     </code>
   ) : (
     <pre
-      style={{
-        background: "rgba(0,0,0,0.07)",
-        borderRadius: "6px",
-        padding: "10px 14px",
-        overflowX: "auto",
-        fontSize: "12px",
-        margin: "8px 0",
-        fontFamily: "monospace",
-      }}
-    >
+  style={{
+    background: "rgba(0,0,0,0.07)",
+    borderRadius: "6px",
+    padding: "10px 14px",
+    overflowX: "auto",
+    overflowY: "hidden",
+    maxWidth: "100%",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    overflowWrap: "anywhere",
+    fontSize: "12px",
+    margin: "8px 0",
+    fontFamily: "monospace",
+    display: "block",
+    boxSizing: "border-box",
+  }}
+>
       <code {...props}>{children}</code>
     </pre>
   
@@ -222,7 +229,7 @@ const Reasoning = () => {
 
       setMessages(prev => [
         ...prev,
-        { role: "bot", text: data.reply  }
+        { role: "bot", text: data.content }
       ]);
 
     } catch (error) {
@@ -249,18 +256,18 @@ const Reasoning = () => {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-2">
-        <div className="max-w-3xl mx-auto space-y-3">
+        <div className="w-full max-w-3xl mx-auto space-y-3 min-w-0">
           {messages.map((msg, index) => (
             <div
               key={index}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`px-4 py-3 rounded-2xl max-w-md text-sm shadow-sm ${
-                  msg.role === "user"
-                    ? "bg-blue-500 text-white rounded-tr-none"
-                    : "bg-white text-gray-800 rounded-tl-none border border-gray-100 mt-3"
-                }`}
+                className={`px-4 py-3 rounded-2xl text-sm shadow-sm overflow-hidden min-w-0 ${
+                msg.role === "user"
+                ? "bg-blue-500 text-white rounded-tr-none max-w-md"
+                : "bg-white text-gray-800 rounded-tl-none border border-gray-100 mt-3 w-full max-w-3xl"
+                   }`}
               >
                 {/* File previews inside message */}
                 {msg.files && msg.files.length > 0 && (
@@ -284,7 +291,7 @@ const Reasoning = () => {
                   </div>
                 )}
 
-                <ReactMarkdown>
+               <ReactMarkdown components={markdownComponents}>
   {String(msg?.text || "")}
 </ReactMarkdown>
                  {/* {msg.text} */}
