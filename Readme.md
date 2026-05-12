@@ -1,4 +1,4 @@
-# HellO This is Sage AI
+# Hello This is Sage AI
 
 A powerful multimodal AI backend built with Flask that provides AI chat, image generation, code reasoning, website summarization, speech-to-text, and authentication/token management features. The frontend for this project is built using React. 
 
